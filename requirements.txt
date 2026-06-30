@@ -1,0 +1,10 @@
+anthropic>=0.25.0
+moviepy>=1.0.3
+Pillow>=10.0.0
+gTTS>=2.3.2
+requests>=2.31.0
+python-dotenv>=1.0.0
+playwright>=1.44.0
+schedule>=1.2.1
+pexelsapi>=1.0.0
+numpy>=1.24.0
