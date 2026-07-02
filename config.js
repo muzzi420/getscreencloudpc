@@ -8,8 +8,15 @@ window.APP_CONFIG = {
   gumroadProductId: 'YOUR-GUMROAD-PRODUCT-ID',
   price: '$9',
 
+  // Separate Gumroad product for the automated pet portrait tool (set up
+  // the same way: create a product, turn on unique license keys per sale).
+  gumroadPetPermalink: 'YOUR-GUMROAD-PET-PERMALINK',
+  gumroadPetProductId: 'YOUR-GUMROAD-PET-PRODUCT-ID',
+  petPrice: '$12',
+
   // Create a Google Form with fields like: pet photo upload, pet name,
   // your name, email, preferred fabric/frame size, deadline, notes.
-  // Paste the form's public URL here once it exists.
+  // Paste the form's public URL here once it exists. This is the fallback
+  // link for fully custom/hand-designed requests, not the automated tool.
   customPetFormUrl: 'https://forms.gle/YOUR-FORM-ID',
 };

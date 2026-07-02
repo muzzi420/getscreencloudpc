@@ -108,11 +108,55 @@
   <section id="custom-pet" class="pet-section">
     <header class="site-header">
       <h2>Custom Pet Portrait Pattern</h2>
-      <p>Want your own pet turned into a cross stitch pattern? Send a photo and a few details, and I'll design it for you.</p>
+      <p>Upload a photo of your pet and get an instant cross stitch pattern — colors are automatically reduced and cleaned up so it's actually stitchable, not scattered confetti.</p>
     </header>
+
+    <div class="pet-tool">
+      <div class="pet-upload">
+        <label for="pet-photo-input" class="btn secondary">Choose a Photo</label>
+        <input id="pet-photo-input" type="file" accept="image/*" hidden />
+        <div id="pet-controls" class="pet-controls" style="display:none">
+          <label>Pattern size
+            <select id="pet-size-select">
+              <option value="small">Small (~50 stitches)</option>
+              <option value="medium" selected>Medium (~70 stitches)</option>
+              <option value="large">Large (~95 stitches)</option>
+            </select>
+          </label>
+          <label>Number of thread colors: <span id="pet-color-count-label">12</span>
+            <input id="pet-color-count" type="range" min="6" max="20" value="12" />
+          </label>
+          <button id="pet-regenerate-btn" class="btn secondary">Regenerate</button>
+        </div>
+        <p id="pet-status" class="status"></p>
+      </div>
+
+      <div class="pet-preview">
+        <canvas id="pet-preview-canvas"></canvas>
+        <div id="pet-legend" class="legend"></div>
+      </div>
+    </div>
+
+    <div class="pet-purchase">
+      <div class="actions">
+        <button id="pet-download-preview-btn" class="btn secondary">Download Free Preview (watermarked)</button>
+        <a id="pet-buy-link" class="btn primary" target="_blank" rel="noopener">Buy Full Pattern — <span id="pet-price-label"></span></a>
+      </div>
+
+      <div class="unlock-box">
+        <label for="pet-license-key-input">Already bought it? Enter your license key to unlock:</label>
+        <div class="unlock-row">
+          <input id="pet-license-key-input" type="text" placeholder="License key from your receipt email" />
+          <button id="pet-unlock-btn" class="btn secondary">Unlock</button>
+        </div>
+        <p id="pet-unlock-status" class="status"></p>
+      </div>
+
+      <button id="pet-download-full-btn" class="btn primary" disabled>Download Full Pattern PDF</button>
+    </div>
+
     <div class="pet-cta">
-      <a id="pet-form-link" class="btn primary" target="_blank" rel="noopener">Request Your Custom Pet Pattern</a>
-      <p class="pet-note">You'll fill out a short form with your pet's photo and your preferences — I'll follow up by email with your custom design.</p>
+      <p class="pet-note">Want a fully custom, hand-designed piece instead (multiple pets, a special layout, etc.)? <a id="pet-form-link" target="_blank" rel="noopener">Request it here</a>.</p>
     </div>
   </section>
 
@@ -129,6 +173,9 @@
   <script src="pdfExport.js"></script>
   <script src="products.js"></script>
   <script src="shop.js"></script>
+  <script src="dmcPalette.js"></script>
+  <script src="photoConverter.js"></script>
+  <script src="pet.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
