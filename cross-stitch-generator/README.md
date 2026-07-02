@@ -42,18 +42,38 @@ already designed — no personalization, just a straight PDF sale.
 3. Optional: add product photos to an `assets/` folder and set `image` to
    the file path — otherwise the card shows a plain placeholder.
 
-## Custom pet portraits
+## Custom pet portraits (automated)
 
-The **Custom Pet Portrait** section is a lead-gen link, not an automated
-generator — turning an arbitrary pet photo into a clean pattern isn't
-something that can be done reliably without a person designing it, so this
-routes to a Google Form instead of trying to fake automation.
+Customers upload a photo and get an instant pattern — no manual design work.
+The pipeline avoids the usual "confetti" problem (scattered single-stitch
+noise) with three steps instead of a naive per-pixel color match:
 
-1. Create a Google Form with fields like: pet photo upload, pet name, your
-   name, email, preferred fabric/frame size, deadline, notes/budget.
-2. Copy the form's public URL into `customPetFormUrl` in `config.js`.
-3. Orders will land in your Form responses — reply by email with the
-   design and a Gumroad payment link once it's ready.
+1. **Progressive canvas downsampling** — repeated halving instead of one
+   big scale jump, so the image is properly box-averaged (smoothed) before
+   anything is quantized.
+2. **K-means clustering** to a small, customer-chosen color count (6–20),
+   so colors come from the photo's actual clusters rather than matching
+   every pixel independently against the full DMC catalog.
+3. **Island cleanup** — any leftover region smaller than ~3 stitches gets
+   folded into whichever color surrounds it most, removing the last
+   speckle.
+
+Code: `dmcPalette.js` (reference thread colors), `photoConverter.js` (the
+pipeline above), `pet.js` (upload UI, controls, wiring into the existing
+renderer/PDF/Gumroad-unlock code shared with the rest of the app).
+
+Set up its own Gumroad product the same way as the main one (unique license
+keys per sale), then fill in `gumroadPetPermalink`, `gumroadPetProductId`,
+and `petPrice` in `config.js`.
+
+There's also a **secondary fallback link** to a Google Form for customers
+who want a fully custom hand-designed piece (multiple pets, special layout)
+instead of the automated tool — set `customPetFormUrl` in `config.js` the
+same way as before.
+
+**Caveat:** the DMC matches are approximate (see below) — for pets with a
+lot of fine texture (long/patterned fur), test a few color-count settings
+and sizes to see what reads best before relying on this for every order.
 
 ## How personalization works
 
@@ -75,8 +95,10 @@ routes to a Google Form instead of trying to fake automation.
 
 - 2 categories (wedding, baby announcement) x 2 template styles each.
   Adding more is just adding entries to `templates.js`.
-- The DMC codes in each template's legend are representative, not a
-  precise colour-matched conversion.
+- The DMC codes in each template's legend (and in `dmcPalette.js` used by
+  the pet portrait tool) are representative approximations of ~50 common
+  colors, not a precise colour-managed conversion — confirm exact shades
+  against a physical DMC card before buying thread in bulk.
 - The license-key unlock calls Gumroad's public verify endpoint directly
   from the browser — fine for this MVP, but note it means the product ID
   is visible client-side (normal for Gumroad's license flow).
