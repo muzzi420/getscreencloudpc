@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'StitchBlock';
+  src: url('vendor/fonts/archivo-black.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
 :root {
   --ink: #2b2b2b;
   --rose: #c5748f;
