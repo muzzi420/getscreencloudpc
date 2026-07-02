@@ -37,7 +37,7 @@ const TEMPLATES = [
         w: 58,
         h: 14,
         colorIndex: 1,
-        font: { family: "'Brush Script MT', 'Segoe Script', cursive", style: 'italic', weight: 'normal' },
+        font: { family: "Georgia, 'Times New Roman', serif", style: 'normal', weight: 'bold' },
         text: (v) => `${v.name1} & ${v.name2}`,
       },
       {
@@ -125,7 +125,7 @@ const TEMPLATES = [
         w: 56,
         h: 16,
         colorIndex: 1,
-        font: { family: "'Brush Script MT', 'Segoe Script', cursive", style: 'italic', weight: 'bold' },
+        font: { family: "Georgia, 'Times New Roman', serif", style: 'italic', weight: 'bold' },
         text: (v) => v.babyName,
       },
       {

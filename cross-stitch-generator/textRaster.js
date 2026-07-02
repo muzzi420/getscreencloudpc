@@ -12,6 +12,7 @@ function rasterizeText(text, cols, rows, opts = {}) {
     fontWeight = 'normal',
     fontStyle = 'normal',
     threshold = 0.4,
+    dilate = false,
   } = opts;
 
   const SAMPLE = 8; // internal supersampling per stitch cell
@@ -57,6 +58,26 @@ function rasterizeText(text, cols, rows, opts = {}) {
       grid[row][col] = avg > threshold ? 1 : 0;
     }
   }
+
+  // Thin script/serif strokes can drop to sub-pixel width and vanish
+  // entirely at stitch resolution. Fill any gap cell that's pinched
+  // between two "on" cells (left+right or above+below) so strokes stay
+  // continuous and readable once stitched.
+  if (dilate) {
+    const filled = grid.map((r) => r.slice());
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (grid[row][col]) continue;
+        const left = col > 0 && grid[row][col - 1];
+        const right = col < cols - 1 && grid[row][col + 1];
+        const up = row > 0 && grid[row - 1][col];
+        const down = row < rows - 1 && grid[row + 1][col];
+        if ((left && right) || (up && down)) filled[row][col] = 1;
+      }
+    }
+    return filled;
+  }
+
   return grid;
 }
 
