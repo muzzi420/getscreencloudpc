@@ -1,70 +1,58 @@
-# How to Create a Free Windows 10 RDP using GitHub | Getscreen Method | 30 min timelimit bypassed
+# StitchMade — Custom Cross Stitch Pattern Generator
 
-Hey there, tech enthusiasts! Welcome to this step-by-step guide on setting up your very own free Windows 10 RDP using the powerful combo of GitHub and the Getscreen method. 🚀
+Self-serve web app: customers type a name/date, pick a template (wedding or
+baby announcement), see a live cross-stitch chart preview, and buy a clean
+PDF. No backend, no build step — plain HTML/CSS/JS.
 
-## Introduction
+## Run it locally
 
-Let's kick things off by breaking down the process into simple, digestible chunks. No worries if you're new to this – we'll walk you through it. If you haven't got a GitHub account yet, don't sweat it! Check out our quick [video tutorial on creating a GitHub account](https://youtu.be/oox_-U_4O7Q) – it'll only take about 3 minutes, and you'll be all set.
+```
+cd cross-stitch-generator
+python3 -m http.server 8000
+```
 
-## Getscreen Account Setup
+Open http://localhost:8000
 
-Alright, let's get that [Getscreen](https://getscreen.me/en/registration) account rolling. Creating an account there is a breeze, and I'll show you how – it'll take literally 1 second! Just copy your Getscreen email to a textpad – we promise it's that easy. ⚡
+## Deploy
 
-## Downloading the GitHub Workflow
+It's a static site — drag the `cross-stitch-generator` folder into Netlify,
+or push it to GitHub Pages / Vercel. No build step needed.
 
-Now, let's snag that GitHub workflow. In the [description](https://bit.ly/GetScreen), you'll find links to different mirrors. It's like having backup plans for your backup plans! If the server decides to snooze, you're covered. Oh, and don't worry about mirror links – we've got an explanatory [video tutorial on how to use mirror links](https://bit.ly/GetScreen) in case you're curious.
+## Before you go live: set up Gumroad
 
-## Video Tutorial In Youtube (H0w To)
-# [Watch The Video](https://youtu.be/VdpiASPO1O4)
+1. Create a product on Gumroad (e.g. "Custom Cross Stitch Pattern PDF"),
+   price it (default in the app assumes $9).
+2. In the product's **Settings**, turn on **"Generate a unique license key
+   per sale."** This is what lets the app verify a purchase without a
+   backend.
+3. Open `config.js` and fill in:
+   - `gumroadPermalink` — the part after `gumroad.com/l/` in your product URL.
+   - `gumroadProductId` — found in the product edit page URL, or via the
+     Gumroad API.
+   - `price` — the label shown on the buy button.
 
-## Let's Get Started!
+## How personalization works
 
-Alright, tech champs, it's time to put the pieces together. You've got your GitHub account, your shiny new Getscreen account, and that trusty GitHub workflow. Ready to dive in? Let's roll!
+- `motifs.js` — decorative shapes (heart, rings, flower, star, border) are
+  generated from math (heart curve, polygon star, etc.), not hand-drawn
+  bitmaps, so they stay clean at any size.
+- `textRaster.js` — renders the customer's typed text with a real browser
+  font onto an offscreen canvas, then samples it down into stitch cells.
+  This is what lets any name/date look right without a hand-built pixel
+  font.
+- `templates.js` — each template declares its grid size, color palette,
+  motif placement, and text zones. Add a new template by adding an entry
+  here.
+- `renderer.js` / `pdfExport.js` — draw the grid to a canvas (with a
+  watermark when unpurchased) and export it to a PDF with a DMC-style
+  color legend.
 
-### Tutorial Walkthrough
+## What's still MVP-scoped
 
-1. Head over to GitHub, create a new public repository, and click that "Upload files" button.
-2. Remember that workflow file you downloaded? Drag and drop those files like a pro coder!
-3. If you're on mobile, don't stress – we've got your back.
-
-### Adding Workflow Files
-
-1. Upload that readme.md file first.
-2. Create a new file, name it ".github/workflows/test", commit those changes.
-3. Add two workflow files – easy-peasy!
-
-### ADDING YOUR GETSCREEN MAIL TO WORKFLOWS (importaint part)
-
-1. Click one of workflows and find this "EMAIL_SECRET=Your Get Screen Mail" 
-2. Replace your copied mail in here , ex: "EMAIL_SECRET=chamoddisala85@gmail.com"
-3. Do same as to the other workflow. If you dosen't get this right you will not get rdp so watch the video
-
-### Running the Workflow
-
-Woo-hoo! Here comes the fun part:
-1. Click on the "Actions" tab.
-2. Choose one of those workflows.
-3. Hit "Run workflow".
-4. If you don't see your run, just give it a quick refresh.
-5. Click on the workflow run, hit "Build now", and then... it's waiting time!
-
-### Getscreen and Connect
-
-Once the workflow wraps up:
-1. Check Getscreen – your RDP will be grinning with a green dot!
-2. Green means go, right? Click "Connect" and say hello to your RDP buddy.
-3. Runneradmin, prepare to meet your new best friend!
-
-### Speed Test and Conclusion
-
-Let's wrap it up with a snappy speed test – after all, you deserve a lightning-fast RDP experience! There you have it, your very own Windows 10 RDP, set up and ready for action.
-
-## Final Thoughts
-
-As we wrap things up, here's a tip – if the first run doesn't quite get you an RDP, don't stress. Give it another shot, and remember, moderation is key. Use this method wisely to keep it going!
-
-## Connect with Us
-
-If you're itching for more solutions, have fresh ideas, or just want to dive into RDP discussions, hop onto our [Telegram channel](https://t.me/TheDisala4U). For deeper dives, join our [discussion group](https://t.me/Disala4uChat) and let's brainstorm together!
-
-Thanks for joining us on this tech journey. Remember, tech adventures can be both fun and straightforward. Drop a star ⭐️ if you found this guide helpful, hit that "Follow" button, and we'll catch you in the next tutorial. Stay tech-savvy, stay awesome! 🎉
+- 2 categories (wedding, baby announcement) x 2 template styles each.
+  Adding more is just adding entries to `templates.js`.
+- The DMC codes in each template's legend are representative, not a
+  precise colour-matched conversion.
+- The license-key unlock calls Gumroad's public verify endpoint directly
+  from the browser — fine for this MVP, but note it means the product ID
+  is visible client-side (normal for Gumroad's license flow).
