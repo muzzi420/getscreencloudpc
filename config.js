@@ -7,4 +7,9 @@ window.APP_CONFIG = {
   gumroadPermalink: 'YOUR-GUMROAD-PERMALINK', // e.g. 'stitchmade-custom-pattern'
   gumroadProductId: 'YOUR-GUMROAD-PRODUCT-ID',
   price: '$9',
+
+  // Create a Google Form with fields like: pet photo upload, pet name,
+  // your name, email, preferred fabric/frame size, deadline, notes.
+  // Paste the form's public URL here once it exists.
+  customPetFormUrl: 'https://forms.gle/YOUR-FORM-ID',
 };

@@ -35,58 +35,85 @@
   </script>
 </head>
 <body>
-  <header class="site-header">
-    <h1>Custom Cross Stitch Pattern Generator</h1>
-    <p>Personalize a wedding or baby-announcement cross stitch pattern in seconds — type a name and date, preview it live, and download a print-ready PDF with a full DMC thread color chart.</p>
-  </header>
+  <nav class="site-nav">
+    <a href="#personalize">Personalize a Pattern</a>
+    <a href="#shop">Shop Ready-Made Patterns</a>
+    <a href="#custom-pet">Custom Pet Portrait</a>
+  </nav>
 
-  <main class="layout">
-    <section class="controls">
-      <div id="category-tabs" class="tabs"></div>
-      <div id="template-cards" class="cards"></div>
+  <section id="personalize">
+    <header class="site-header">
+      <h1>Custom Cross Stitch Pattern Generator</h1>
+      <p>Personalize a wedding or baby-announcement cross stitch pattern in seconds — type a name and date, preview it live, and download a print-ready PDF with a full DMC thread color chart.</p>
+    </header>
 
-      <div id="form-fields" class="form"></div>
+    <main class="layout">
+      <section class="controls">
+        <div id="category-tabs" class="tabs"></div>
+        <div id="template-cards" class="cards"></div>
 
-      <div class="actions">
-        <button id="download-preview-btn" class="btn secondary">Download Free Preview (watermarked)</button>
-        <a id="buy-link" class="btn primary" target="_blank" rel="noopener">Buy Full Pattern — <span id="price-label"></span></a>
-      </div>
+        <div id="form-fields" class="form"></div>
 
-      <div class="unlock-box">
-        <label for="license-key-input">Already bought it? Enter your license key to unlock:</label>
-        <div class="unlock-row">
-          <input id="license-key-input" type="text" placeholder="License key from your receipt email" />
-          <button id="unlock-btn" class="btn secondary">Unlock</button>
+        <div class="actions">
+          <button id="download-preview-btn" class="btn secondary">Download Free Preview (watermarked)</button>
+          <a id="buy-link" class="btn primary" target="_blank" rel="noopener">Buy Full Pattern — <span id="price-label"></span></a>
         </div>
-        <p id="unlock-status" class="status"></p>
-      </div>
 
-      <button id="download-full-btn" class="btn primary" disabled>Download Full Pattern PDF</button>
+        <div class="unlock-box">
+          <label for="license-key-input">Already bought it? Enter your license key to unlock:</label>
+          <div class="unlock-row">
+            <input id="license-key-input" type="text" placeholder="License key from your receipt email" />
+            <button id="unlock-btn" class="btn secondary">Unlock</button>
+          </div>
+          <p id="unlock-status" class="status"></p>
+        </div>
+
+        <button id="download-full-btn" class="btn primary" disabled>Download Full Pattern PDF</button>
+      </section>
+
+      <section class="preview">
+        <canvas id="preview-canvas"></canvas>
+        <div id="legend" class="legend"></div>
+      </section>
+    </main>
+
+    <section class="info-section">
+      <h2>How the custom cross stitch pattern generator works</h2>
+      <ol>
+        <li><strong>Pick a design.</strong> Choose a wedding sampler or baby announcement template, in a classic or modern style.</li>
+        <li><strong>Type your names and date.</strong> The chart updates instantly as you type, so you see exactly what you'll get.</li>
+        <li><strong>Download your pattern.</strong> Get a print-ready PDF with a stitch chart and a DMC thread color legend — ready to stitch the same day.</li>
+      </ol>
     </section>
 
-    <section class="preview">
-      <canvas id="preview-canvas"></canvas>
-      <div id="legend" class="legend"></div>
+    <section class="info-section">
+      <h2>Frequently asked questions</h2>
+      <h3>What comes in the PDF?</h3>
+      <p>Your personalized stitch chart, a DMC thread color legend with stitch counts per color, and the pattern size in stitches.</p>
+      <h3>Can I use any name or date?</h3>
+      <p>Yes — the generator renders whatever text you type, so any name, wedding date, or birth date works.</p>
+      <h3>What fabric count should I use?</h3>
+      <p>Any count works; higher counts (like 16 or 18) give a smaller finished piece, lower counts (like 11 or 14) give a larger one.</p>
     </section>
-  </main>
-
-  <section class="info-section">
-    <h2>How the custom cross stitch pattern generator works</h2>
-    <ol>
-      <li><strong>Pick a design.</strong> Choose a wedding sampler or baby announcement template, in a classic or modern style.</li>
-      <li><strong>Type your names and date.</strong> The chart updates instantly as you type, so you see exactly what you'll get.</li>
-      <li><strong>Download your pattern.</strong> Get a print-ready PDF with a stitch chart and a DMC thread color legend — ready to stitch the same day.</li>
-    </ol>
   </section>
 
-  <section class="info-section">
-    <h2>Frequently asked questions</h2>
-    <h3>What comes in the PDF?</h3>
-    <p>Your personalized stitch chart, a DMC thread color legend with stitch counts per color, and the pattern size in stitches.</p>
-    <h3>Can I use any name or date?</h3>
-    <p>Yes — the generator renders whatever text you type, so any name, wedding date, or birth date works.</p>
-    <h3>What fabric count should I use?</h3>
-    <p>Any count works; higher counts (like 16 or 18) give a smaller finished piece, lower counts (like 11 or 14) give a larger one.</p>
+  <section id="shop" class="shop-section">
+    <header class="site-header">
+      <h2>Shop Ready-Made Patterns</h2>
+      <p>Browse finished designs — instant PDF download after purchase, no personalization needed.</p>
+    </header>
+    <div id="shop-grid" class="shop-grid"></div>
+  </section>
+
+  <section id="custom-pet" class="pet-section">
+    <header class="site-header">
+      <h2>Custom Pet Portrait Pattern</h2>
+      <p>Want your own pet turned into a cross stitch pattern? Send a photo and a few details, and I'll design it for you.</p>
+    </header>
+    <div class="pet-cta">
+      <a id="pet-form-link" class="btn primary" target="_blank" rel="noopener">Request Your Custom Pet Pattern</a>
+      <p class="pet-note">You'll fill out a short form with your pet's photo and your preferences — I'll follow up by email with your custom design.</p>
+    </div>
   </section>
 
   <footer class="site-footer">
@@ -100,6 +127,8 @@
   <script src="templates.js"></script>
   <script src="renderer.js"></script>
   <script src="pdfExport.js"></script>
+  <script src="products.js"></script>
+  <script src="shop.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
