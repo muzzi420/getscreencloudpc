@@ -136,6 +136,9 @@ function wireButtons() {
   buyLink.href = `https://gumroad.com/l/${window.APP_CONFIG.gumroadPermalink}`;
   document.getElementById('price-label').textContent = window.APP_CONFIG.price;
 
+  const petFormLink = document.getElementById('pet-form-link');
+  if (petFormLink) petFormLink.href = window.APP_CONFIG.customPetFormUrl;
+
   document.getElementById('download-preview-btn').onclick = () => {
     const tpl = currentTemplate();
     exportPDF(state.lastGrid, tpl, state.values, { watermark: true });

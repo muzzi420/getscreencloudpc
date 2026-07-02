@@ -31,6 +31,30 @@ or push it to GitHub Pages / Vercel. No build step needed.
      Gumroad API.
    - `price` — the label shown on the buy button.
 
+## Selling ready-made patterns (Shop section)
+
+The page also has a **Shop Ready-Made Patterns** section for patterns you've
+already designed — no personalization, just a straight PDF sale.
+
+1. Create one Gumroad product per pattern.
+2. Open `products.js` and replace the placeholder entries with your real
+   patterns: name, price, description, and the product's `gumroadPermalink`.
+3. Optional: add product photos to an `assets/` folder and set `image` to
+   the file path — otherwise the card shows a plain placeholder.
+
+## Custom pet portraits
+
+The **Custom Pet Portrait** section is a lead-gen link, not an automated
+generator — turning an arbitrary pet photo into a clean pattern isn't
+something that can be done reliably without a person designing it, so this
+routes to a Google Form instead of trying to fake automation.
+
+1. Create a Google Form with fields like: pet photo upload, pet name, your
+   name, email, preferred fabric/frame size, deadline, notes/budget.
+2. Copy the form's public URL into `customPetFormUrl` in `config.js`.
+3. Orders will land in your Form responses — reply by email with the
+   design and a Gumroad payment link once it's ready.
+
 ## How personalization works
 
 - `motifs.js` — decorative shapes (heart, rings, flower, star, border) are
