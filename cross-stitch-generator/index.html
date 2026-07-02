@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StitchMade — Custom Cross Stitch Pattern Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>StitchMade</h1>
+    <p>Personalize a wedding or baby-announcement cross stitch pattern in seconds.</p>
+  </header>
+
+  <main class="layout">
+    <section class="controls">
+      <div id="category-tabs" class="tabs"></div>
+      <div id="template-cards" class="cards"></div>
+
+      <div id="form-fields" class="form"></div>
+
+      <div class="actions">
+        <button id="download-preview-btn" class="btn secondary">Download Free Preview (watermarked)</button>
+        <a id="buy-link" class="btn primary" target="_blank" rel="noopener">Buy Full Pattern — <span id="price-label"></span></a>
+      </div>
+
+      <div class="unlock-box">
+        <label for="license-key-input">Already bought it? Enter your license key to unlock:</label>
+        <div class="unlock-row">
+          <input id="license-key-input" type="text" placeholder="License key from your receipt email" />
+          <button id="unlock-btn" class="btn secondary">Unlock</button>
+        </div>
+        <p id="unlock-status" class="status"></p>
+      </div>
+
+      <button id="download-full-btn" class="btn primary" disabled>Download Full Pattern PDF</button>
+    </section>
+
+    <section class="preview">
+      <canvas id="preview-canvas"></canvas>
+      <div id="legend" class="legend"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Patterns are generated in your browser — nothing is uploaded anywhere.</p>
+  </footer>
+
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="config.js"></script>
+  <script src="motifs.js"></script>
+  <script src="textRaster.js"></script>
+  <script src="templates.js"></script>
+  <script src="renderer.js"></script>
+  <script src="pdfExport.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
