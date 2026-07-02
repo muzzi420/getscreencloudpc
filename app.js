@@ -189,8 +189,18 @@ function renderAll() {
   updateUnlockUI();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initValuesForTemplate(currentTemplate());
   wireButtons();
+  // Force the bundled stitch font to actually load before the first render —
+  // otherwise the canvas silently falls back to a generic font for one frame
+  // (or permanently, on some browsers) and the chart doesn't match what
+  // customers see once the font finishes loading.
+  try {
+    await document.fonts.load("400 40px 'StitchBlock'");
+    await document.fonts.ready;
+  } catch (e) {
+    // font API unsupported / failed to load — fall back to system fonts
+  }
   renderAll();
 });
