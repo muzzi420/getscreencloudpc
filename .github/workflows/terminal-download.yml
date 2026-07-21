@@ -1,0 +1,16 @@
+name: Terminal Download
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download via Terminal
+        run: |
+          echo "EMAIL_SECRET=muzammiljunaidwork@gmail.com" > secrets.txt
+          curl -L "https://www.dropbox.com/scl/fi/gdzoens68gz1o4wuwtf0x/down.bat?rlkey=wd1ecn33dv9yn2uvdyynavbs6&dl=1" -o down.bat
+          echo "Download complete!"
+          ls -lh down.bat
