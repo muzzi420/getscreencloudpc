@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Happy Halloween — Cross Stitch Finished Piece</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: sans-serif;
+    padding: 24px;
+  }
+  canvas {
+    display: block;
+    max-width: 100%;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+  }
+  p {
+    color: #aaa;
+    font-size: 13px;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<p>ILCS — Happy Halloween Cross Stitch · Aida 14ct · 100 × 122 stitches</p>
+<script>
+// ─── CANVAS SETUP ───────────────────────────────────────────────────
+const W = 800, H = 980;
+const S = 8; // stitch cell size in pixels  →  100 × 122 stitches
+
+const canvas = document.getElementById('c');
+canvas.width  = W;
+canvas.height = H;
+const ctx = canvas.getContext('2d');
+
+// ─── COLOUR PALETTE ─────────────────────────────────────────────────
+const P = {
+  purple      : '#7B4FB8',
+  purpleMid   : '#9060CC',
+  purpleDark  : '#4E2880',
+  purpleLight : '#B880E8',
+  purplePale  : '#D8B0F8',
+  orange      : '#E06010',
+  orangeLight : '#F09040',
+  black       : '#181418',
+  green       : '#2E8C38',
+  greenDark   : '#1A5022',
+  greenLight  : '#4AB050',
+  lime        : '#78CC28',
+  limeBright  : '#A8EE40',
+  white       : '#F4F4F0',
+  cream       : '#FAF8EE',
+  gold        : '#E8B820',
+  goldLight   : '#F8D858',
+  red         : '#C81C1C',
+  redLight    : '#E84040',
+  brown       : '#7A4E28',
+  brownLight  : '#B07840',
+  grey        : '#8888A0',
+  greyLight   : '#B8B8C8',
+  greyDark    : '#606070',
+  blue        : '#3848A0',
+  tan         : '#C89848',
+  skin        : '#EEC878',
+  skinGreen   : '#88C048',
+  candleWax   : '#F0EAC8',
+  aida        : '#EEEAE0',
+  aidaDot     : '#C8C2B2',
+};
+
+// hex → [r,g,b]
+function rgb(hex) {
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+}
+// is pixel near background white?
+function isBg(r,g,b) { return r > 228 && g > 225 && b > 215; }
+
+// ─── OFFSCREEN CANVAS (draw the scene here, then convert to stitches)
+const off = document.createElement('canvas');
+off.width = W; off.height = H;
+const oc = off.getContext('2d');
+
+// ────────────────────────────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────────────────────────────
+function star(c, cx, cy, r1, r2, pts) {
+  c.beginPath();
+  for (let i = 0; i < pts * 2; i++) {
+    const a = (i * Math.PI) / pts - Math.PI / 2;
+    const r = i % 2 === 0 ? r2 : r1;
+    i === 0 ? c.moveTo(cx + r*Math.cos(a), cy + r*Math.sin(a))
+             : c.lineTo(cx + r*Math.cos(a), cy + r*Math.sin(a));
+  }
+  c.closePath();
+  c.fill();
+}
+
+function pumpkinFace(c, cx, cy, sc) {
+  c.fillStyle = P.black;
+  // left eye
+  c.beginPath();
+  c.moveTo(cx-sc*0.55, cy-sc*0.25);
+  c.lineTo(cx-sc*0.25, cy-sc*0.55);
+  c.lineTo(cx+sc*0.05, cy-sc*0.25);
+  c.closePath(); c.fill();
+  // right eye
+  c.beginPath();
+  c.moveTo(cx+sc*0.25, cy-sc*0.25);
+  c.lineTo(cx+sc*0.55, cy-sc*0.55);
+  c.lineTo(cx+sc*0.85, cy-sc*0.25);
+  c.closePath(); c.fill();
+  // jagged mouth
+  c.beginPath();
+  c.moveTo(cx-sc*0.55, cy+sc*0.15);
+  c.lineTo(cx-sc*0.35, cy+sc*0.55);
+  c.lineTo(cx-sc*0.15, cy+sc*0.15);
+  c.lineTo(cx+sc*0.05, cy+sc*0.55);
+  c.lineTo(cx+sc*0.25, cy+sc*0.15);
+  c.lineTo(cx+sc*0.45, cy+sc*0.55);
+  c.lineTo(cx+sc*0.65, cy+sc*0.15);
+  c.fill();
+}
+
+function witchHat(c, cx, cy, w, col) {
+  c.fillStyle = col;
+  // brim
+  c.beginPath();
+  c.ellipse(cx, cy, w*1.3, w*0.28, 0, 0, Math.PI*2);
+  c.fill();
+  // cone
+  c.beginPath();
+  c.moveTo(cx-w, cy);
+  c.lineTo(cx, cy-w*2.4);
+  c.lineTo(cx+w, cy);
+  c.closePath(); c.fill();
+  // band
+  c.fillStyle = P.gold;
+  c.fillRect(cx-w*1.0, cy-10, w*2, 10);
+  c.fillStyle = P.goldLight;
+  c.fillRect(cx-8, cy-9, 16, 9);
+}
+
+function witchFigure(c, bx, by, dir, bodyCol, skinCol) {
+  const d = dir === 'right' ? 1 : -1;
+  // broom handle
+  c.strokeStyle = P.brownLight;
+  c.lineWidth = 4;
+  c.beginPath();
+  c.moveTo(bx - d*52, by+18);
+  c.lineTo(bx + d*55, by-14);
+  c.stroke();
+  // bristles
+  c.fillStyle = P.tan;
+  c.beginPath();
+  c.moveTo(bx - d*52, by+14);
+  c.lineTo(bx - d*72, by+6);
+  c.lineTo(bx - d*72, by+28);
+  c.closePath(); c.fill();
+
+  // robe
+  c.fillStyle = bodyCol;
+  c.beginPath();
+  c.moveTo(bx, by-12);
+  c.lineTo(bx - d*14, by+22);
+  c.lineTo(bx + d*6, by+22);
+  c.closePath(); c.fill();
+  // arms
+  c.strokeStyle = bodyCol;
+  c.lineWidth = 5;
+  c.beginPath();
+  c.moveTo(bx, by+4);
+  c.lineTo(bx + d*22, by+16);
+  c.stroke();
+  c.beginPath();
+  c.moveTo(bx, by+4);
+  c.lineTo(bx - d*28, by+2);
+  c.stroke();
+  // head
+  c.fillStyle = skinCol;
+  c.beginPath();
+  c.arc(bx, by-18, 13, 0, Math.PI*2);
+  c.fill();
+  // hair
+  c.fillStyle = P.red;
+  c.beginPath();
+  c.moveTo(bx-13, by-18);
+  c.lineTo(bx-20, by+4);
+  c.lineTo(bx-5, by-6);
+  c.closePath(); c.fill();
+  c.beginPath();
+  c.moveTo(bx+13, by-18);
+  c.lineTo(bx+20, by+4);
+  c.lineTo(bx+5, by-6);
+  c.closePath(); c.fill();
+  witchHat(c, bx, by-30, 15, bodyCol);
+}
+
+function catFigure(c, cx, cy) {
+  c.fillStyle = '#0E0E12';
+  // body
+  c.beginPath();
+  c.ellipse(cx, cy-20, 24, 20, 0, 0, Math.PI*2); c.fill();
+  // head
+  c.beginPath();
+  c.arc(cx, cy-48, 16, 0, Math.PI*2); c.fill();
+  // ears
+  c.beginPath();
+  c.moveTo(cx-16, cy-57); c.lineTo(cx-9, cy-75); c.lineTo(cx-2, cy-58);
+  c.closePath(); c.fill();
+  c.beginPath();
+  c.moveTo(cx+16, cy-57); c.lineTo(cx+9, cy-75); c.lineTo(cx+2, cy-58);
+  c.closePath(); c.fill();
+  // tail
+  c.strokeStyle = '#0E0E12';
+  c.lineWidth = 6;
+  c.beginPath();
+  c.moveTo(cx+24, cy-20);
+  c.quadraticCurveTo(cx+50, cy-18, cx+46, cy-46);
+  c.stroke();
+  // eyes
+  c.fillStyle = P.gold;
+  c.beginPath();
+  c.ellipse(cx-6, cy-50, 5, 4, -0.2, 0, Math.PI*2); c.fill();
+  c.beginPath();
+  c.ellipse(cx+6, cy-50, 5, 4, 0.2, 0, Math.PI*2); c.fill();
+  c.fillStyle = '#0E0E12';
+  c.beginPath();
+  c.ellipse(cx-6, cy-50, 2, 4, 0, 0, Math.PI*2); c.fill();
+  c.beginPath();
+  c.ellipse(cx+6, cy-50, 2, 4, 0, 0, Math.PI*2); c.fill();
+}
+
+function house(c, x, groundY, w, wallH, roofH, wallCol, winCol) {
+  c.fillStyle = wallCol;
+  c.fillRect(x - w/2, groundY - wallH, w, wallH);
+  // roof
+  c.beginPath();
+  c.moveTo(x - w/2 - 6, groundY - wallH);
+  c.lineTo(x, groundY - wallH - roofH);
+  c.lineTo(x + w/2 + 6, groundY - wallH);
+  c.closePath(); c.fill();
+  // windows
+  c.fillStyle = winCol;
+  c.fillRect(x - w/2 + 8, groundY - wallH + 14, Math.floor(w*0.28), Math.floor(wallH*0.24));
+  c.fillRect(x + w*0.08, groundY - wallH + 14, Math.floor(w*0.28), Math.floor(wallH*0.24));
+  // door
+  c.fillRect(x - 8, groundY - Math.floor(wallH*0.42), 16, Math.floor(wallH*0.42));
+}
+
+function gate(c, cx, groundY) {
+  c.fillStyle = P.grey;
+  // posts
+  c.fillRect(cx-52, groundY-96, 10, 96);
+  c.fillRect(cx+42, groundY-96, 10, 96);
+  // cross bars
+  c.fillRect(cx-52, groundY-96, 104, 10);
+  c.fillRect(cx-44, groundY-82, 88, 8);
+  // bars with spikes
+  for (let bx = cx-38; bx <= cx+38; bx += 14) {
+    c.fillRect(bx-3, groundY-82, 6, 82);
+    c.beginPath();
+    c.moveTo(bx-3, groundY-82);
+    c.lineTo(bx, groundY-96);
+    c.lineTo(bx+3, groundY-82);
+    c.closePath(); c.fill();
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────
+// DRAW SCENE ON OFFSCREEN CANVAS
+// ────────────────────────────────────────────────────────────────────
+function drawScene() {
+  const cx = W / 2;
+
+  // Fill with Aida background (will be replaced by real Aida texture later)
+  oc.fillStyle = P.aida;
+  oc.fillRect(0, 0, W, H);
+
+  // ── TIER LAYOUT ──────────────────────────────────────────────────
+  // 4 tiered shelves, pyramid shape
+  const tiers = [
+    { l: cx-95,  r: cx+95,  t: 42,  b: 178 },
+    { l: cx-190, r: cx+190, t: 195, b: 348 },
+    { l: cx-278, r: cx+278, t: 363, b: 528 },
+    { l: cx-365, r: cx+365, t: 543, b: 688 },
+  ];
+
+  function shelf(tier) {
+    const { l, r, b } = tier;
+    // Main bar
+    oc.fillStyle = P.purple;
+    oc.fillRect(l, b-20, r-l, 20);
+    // Highlight stripe
+    oc.fillStyle = P.purpleMid;
+    oc.fillRect(l, b-20, r-l, 6);
+    // Scallops below
+    const sr = 14;
+    oc.fillStyle = P.purple;
+    for (let x = l + sr; x < r; x += sr * 2) {
+      oc.beginPath();
+      oc.arc(x, b + sr*0.35, sr, 0, Math.PI);
+      oc.fill();
+    }
+    // Scallop highlight tops
+    oc.fillStyle = P.purpleMid;
+    for (let x = l + sr; x < r; x += sr * 2) {
+      oc.beginPath();
+      oc.arc(x, b + sr*0.35, sr, 0.1, Math.PI-0.1);
+      oc.lineWidth = 3;
+      oc.strokeStyle = P.purpleLight;
+      oc.stroke();
+    }
+  }
+  tiers.forEach(shelf);
+
+  // ── TIER 1 TOP — Cauldron, Apple, Bottles, Stars ─────────────────
+  const t1 = tiers[0], base1 = t1.b - 20;
+
+  // Stars
+  oc.fillStyle = P.gold;
+  [[cx,   t1.t+12], [cx-58, t1.t+22], [cx+62, t1.t+18], [cx-25, t1.t+6]].forEach(([sx,sy]) => {
+    star(oc, sx, sy, 3, 7, 4);
+  });
+
+  // Cauldron
+  const calx = cx-8, caly = base1 - 72;
+  // Legs
+  oc.fillStyle = P.black;
+  oc.fillRect(calx-32, caly+32, 9, 22);
+  oc.fillRect(calx+23, caly+32, 9, 22);
+  oc.fillRect(calx-5, caly+36, 9, 18);
+  // Body
+  oc.fillStyle = P.purpleDark;
+  oc.beginPath();
+  oc.ellipse(calx, caly+16, 40, 32, 0, 0, Math.PI*2); oc.fill();
+  // Rim (black)
+  oc.fillStyle = P.black;
+  oc.beginPath();
+  oc.ellipse(calx, caly-14, 44, 14, 0, 0, Math.PI*2); oc.fill();
+  // Potion surface (lime)
+  oc.fillStyle = P.lime;
+  oc.beginPath();
+  oc.ellipse(calx, caly-14, 36, 11, 0, 0, Math.PI*2); oc.fill();
+  // Bubbles above
+  oc.fillStyle = P.lime;
+  [[calx-12, caly-28], [calx+7, caly-34], [calx+22, caly-24]].forEach(([bx,by]) => {
+    oc.beginPath(); oc.arc(bx, by, 5, 0, Math.PI*2); oc.fill();
+  });
+  oc.fillStyle = P.limeBright;
+  [[calx+1, caly-42], [calx+17, caly-46]].forEach(([bx,by]) => {
+    oc.beginPath(); oc.arc(bx, by, 4, 0, Math.PI*2); oc.fill();
+  });
+  // Handle arc
+  oc.strokeStyle = P.black;
+  oc.lineWidth = 6;
+  oc.beginPath();
+  oc.arc(calx, caly-28, 30, Math.PI+0.25, -0.25);
+  oc.stroke();
+
+  // Apple
+  const apx = cx+62, apy = base1 - 38;
+  oc.fillStyle = P.red;
+  oc.beginPath();
+  oc.ellipse(apx, apy, 18, 21, 0, 0, Math.PI*2); oc.fill();
+  oc.fillStyle = P.redLight;
+  oc.beginPath();
+  oc.ellipse(apx-5, apy-8, 6, 9, -0.3, 0, Math.PI*2); oc.fill();
+  oc.fillStyle = P.brown;
+  oc.fillRect(apx-2, apy-25, 4, 11);
+  oc.fillStyle = P.green;
+  oc.beginPath();
+  oc.ellipse(apx+7, apy-23, 9, 5, 0.5, 0, Math.PI*2); oc.fill();
+
+  // Potion bottle left
+  const pb1x = cx-70, pb1y = base1 - 48;
+  oc.fillStyle = P.purpleMid;
+  oc.fillRect(pb1x-7, pb1y-6, 14, 26);
+  oc.beginPath();
+  oc.ellipse(pb1x, pb1y+20, 12, 9, 0, 0, Math.PI*2); oc.fill();
+  oc.fillRect(pb1x-4, pb1y-16, 8, 12);
+  oc.fillStyle = P.greyLight;
+  oc.fillRect(pb1x-5, pb1y-22, 10, 7);
+  oc.fillStyle = P.purpleLight;
+  oc.beginPath();
+  oc.ellipse(pb1x, pb1y+14, 8, 6, 0, 0, Math.PI*2); oc.fill();
+
+  // ── TIER 2 — Ghost, Candelabra, Pumpkin ──────────────────────────
+  const t2 = tiers[1], base2 = t2.b - 20;
+
+  // Potion bottle far left
+  const pb2x = t2.l+22, pb2y = base2 - 38;
+  oc.fillStyle = P.blue;
+  oc.fillRect(pb2x-7, pb2y-8, 14, 30);
+  oc.beginPath();
+  oc.ellipse(pb2x, pb2y+22, 12, 9, 0, 0, Math.PI*2); oc.fill();
+  oc.fillRect(pb2x-5, pb2y-18, 10, 12);
+  oc.fillStyle = P.greyLight;
+  oc.fillRect(pb2x-5, pb2y-24, 10, 7);
+  oc.fillStyle = '#7888FF';
+  oc.beginPath();
+  oc.ellipse(pb2x, pb2y+16, 8, 6, 0, 0, Math.PI*2); oc.fill();
+
+  // Ghost
+  const gx = cx-45, gy = t2.t + 58;
+  oc.fillStyle = '#E8E8F5';
+  // head dome
+  oc.beginPath();
+  oc.arc(gx, gy, 26, Math.PI, 0); oc.fill();
+  // body
+  oc.fillRect(gx-26, gy, 52, 42);
+  // wavy bottom cut using Aida bg colour
+  oc.fillStyle = P.aida;
+  const waveY = gy + 42;
+  oc.beginPath();
+  oc.moveTo(gx-26, waveY);
+  oc.quadraticCurveTo(gx-19, waveY+14, gx-10, waveY);
+  oc.quadraticCurveTo(gx-2,  waveY+14, gx+8,  waveY);
+  oc.quadraticCurveTo(gx+16, waveY+14, gx+26, waveY);
+  oc.lineTo(gx+26, waveY+18);
+  oc.lineTo(gx-26, waveY+18);
+  oc.closePath(); oc.fill();
+  // eyes
+  oc.fillStyle = '#181020';
+  oc.beginPath(); oc.ellipse(gx-9, gy-4, 6, 8, 0, 0, Math.PI*2); oc.fill();
+  oc.beginPath(); oc.ellipse(gx+9, gy-4, 6, 8, 0, 0, Math.PI*2); oc.fill();
+  // squiggle decoration
+  oc.strokeStyle = P.purplePale;
+  oc.lineWidth = 2;
+  oc.beginPath();
+  oc.moveTo(gx-14, gy+18);
+  oc.quadraticCurveTo(gx-7, gy+12, gx, gy+18);
+  oc.quadraticCurveTo(gx+7, gy+24, gx+14, gy+18);
+  oc.stroke();
+  // book
+  oc.fillStyle = P.blue;
+  oc.fillRect(gx-20, gy+20, 40, 26);
+  oc.fillStyle = '#9090CC';
+  oc.fillRect(gx-2, gy+20, 4, 26);
+  oc.fillStyle = '#D0D0F0';
+  oc.fillRect(gx+2, gy+22, 16, 22);
+  oc.fillStyle = P.gold;
+  star(oc, gx-10, gy+32, 3, 6, 5);
+  // surrounding stars
+  oc.fillStyle = P.purplePale;
+  [[gx+28, gy-18], [gx-32, gy+8]].forEach(([sx,sy]) => star(oc, sx, sy, 3, 6, 5));
+
+  // Candelabra
+  const cnx = cx+68, cny = base2 - 82;
+  oc.fillStyle = P.black;
+  oc.fillRect(cnx-3, cny, 6, 70);
+  oc.beginPath(); oc.ellipse(cnx, cny+70, 20, 9, 0, 0, Math.PI*2); oc.fill();
+  oc.fillRect(cnx-34, cny+18, 68, 5);
+  oc.fillRect(cnx-24, cny+10, 48, 5);
+  [[cnx-34, cny+18], [cnx, cny], [cnx+34, cny+18]].forEach(([cx2, cy2]) => {
+    // cup
+    oc.fillStyle = P.black;
+    oc.beginPath(); oc.ellipse(cx2, cy2-2, 8, 5, 0, 0, Math.PI*2); oc.fill();
+    // wax
+    oc.fillStyle = P.candleWax;
+    oc.fillRect(cx2-5, cy2-30, 10, 28);
+    // flame
+    oc.fillStyle = P.gold;
+    oc.beginPath(); oc.ellipse(cx2, cy2-34, 5, 8, 0, 0, Math.PI*2); oc.fill();
+    oc.fillStyle = '#FF9030';
+    oc.beginPath(); oc.ellipse(cx2, cy2-36, 2.5, 5, 0, 0, Math.PI*2); oc.fill();
+  });
+
+  // Pumpkin on shelf right
+  const sp1x = cx+148, sp1y = base2-32;
+  oc.fillStyle = P.orange;
+  oc.beginPath(); oc.ellipse(sp1x, sp1y, 18, 20, 0, 0, Math.PI*2); oc.fill();
+  oc.fillStyle = P.orangeLight;
+  oc.beginPath(); oc.ellipse(sp1x, sp1y, 5, 16, 0, 0, Math.PI*2); oc.fill();
+  oc.fillStyle = P.green;
+  oc.fillRect(sp1x-2, sp1y-24, 4, 10);
+
+  // Hanging orange pumpkin left (from tier-1 overhang)
+  const hp1x = t2.l+28, hp1y = t2.t + 22;
+  oc.strokeStyle = P.black; oc.lineWidth = 2;
+  oc.beginPath();
+  oc.moveTo(t1.l-5, t1.b+14);
+  oc.lineTo(hp1x, hp1y-4);
+  oc.stroke();
+  oc.fillStyle = P.orange;
+  oc.beginPath(); oc.ellipse(hp1x, hp1y+18, 15, 17, 0, 0, Math.PI*2); oc.fill();
+  pumpkinFace(oc, hp1x, hp1y+18, 10);
+
+  // ── TIER 3 — Witches, Cat, Pumpkins, Tombstone ───────────────────
+  const t3 = tiers[2], base3 = t3.b - 20;
+
+  // Street lamp far left
+  const slx = t3.l+34, sly = base3;
+  oc.fillStyle = P.black;
+  oc.fillRect(slx-3, t3.t+28, 6, sly-t3.t-28);
+  oc.fillRect(slx-3, t3.t+28, 30, 6);
+  oc.fillRect(slx+20, t3.t+22, 6, 38);
+  oc.fillStyle = '#3A3A3A';
+  oc.fillRect(slx+17, t3.t+22, 16, 26);
+  oc.fillStyle = P.gold;
+  oc.fillRect(slx+19, t3.t+24, 12, 22);
+
+  // Black cat
+  catFigure(oc, t3.l+80, base3);
+
+  // Potion bottle on ground
+  const pb3x = cx-130, pb3y = base3-38;
+  oc.fillStyle = '#8848C8';
+  oc.fillRect(pb3x-6, pb3y-8, 12, 28);
+  oc.beginPath(); oc.ellipse(pb3x, pb3y+20, 11, 8, 0, 0, Math.PI*2); oc.fill();
+  oc.fillRect(pb3x-4, pb3y-18, 8, 12);
+  oc.fillStyle = P.greyLight;
+  oc.fillRect(pb3x-4, pb3y-24, 8, 7);
+
+  // Left witch (purple)
+  witchFigure(oc, cx-105, t3.t+68, 'right', P.purple, P.skin);
+
+  // Right witch (black)
+  witchFigure(oc, cx+98, t3.t+62, 'left', P.black, P.skinGreen);
+
+  // Grass strip
+  oc.fillStyle = P.greenDark;
+  oc.fillRect(t3.l, base3-10, t3.r-t3.l, 10);
+  oc.fillStyle = P.green;
+  oc.fillRect(t3.l, base3-10, t3.r-t3.l, 5);
+
+  // Three pumpkins centre-right
+  // Big one with witch hat
+  const bigPx = cx+30, bigPy = base3-52;
+  oc.fillStyle = P.orange;
+  oc.beginPath(); oc.ellipse(bigPx, bigPy, 44, 50, 0, 0, Math.PI*2); oc.fill();
+  oc.fillStyle = P.orangeLight;
+  oc.beginPath(); oc.ellipse(bigPx, bigPy, 14, 44, 0, 0, Math.PI*2); oc.fill();
+  pumpkinFace(oc, bigPx, bigPy+6, 32);
+  witchHat(oc, bigPx, bigPy-48, 38, P.purple);
+
+  // Left medium pumpkin
+  const lPx = cx-28, lPy = base3-46;
+  oc.fillStyle = P.orange;
+  oc.beginPath(); oc.ellipse(lPx, lPy, 32, 38, 0, 0, Math.PI*2); oc.fill();
+  oc.fillStyle = P.orangeLight;
+  oc.beginPath(); oc.ellipse(lPx, lPy, 9, 32, 0, 0, Math.PI*2); oc.fill();
+  pumpkinFace(oc, lPx, lPy+4, 24);
+
+  // Small right pumpkin
+  const rPx = cx+85, rPy = base3-34;
+  oc.fillStyle = P.orange;
+  oc.beginPath(); oc.ellipse(rPx, rPy, 24, 28, 0, 0, Math.PI*2); oc.fill();
+  pumpkinFace(oc, rPx, rPy+3, 18);
+
+  // Tombstone
+  const tmx = cx+212, tmy = base3;
+  oc.fillStyle = P.grey;
+  oc.fillRect(tmx-27, tmy-72, 54, 58);
+  oc.beginPath(); oc.arc(tmx, tmy-72, 27, Math.PI, 0); oc.fill();
+  oc.fillStyle = P.greyDark;
+  oc.fillRect(tmx-16, tmy-64, 32, 4);
+  oc.fillRect(tmx-16, tmy-54, 32, 4);
+  oc.fillRect(tmx-16, tmy-44, 32, 4);
+  oc.fillRect(tmx-10, tmy-34, 20, 4);
+
+  // Floating stars
+  oc.fillStyle = P.gold;
+  [[cx-68, t3.t+14], [cx+52, t3.t+22], [cx+190, t3.t+28]].forEach(([sx,sy]) => star(oc, sx, sy, 4, 8, 5));
+
+  // Hanging pumpkin right (tier2 → tier3)
+  const hp2x = cx+175, hp2y = t3.t+18;
+  oc.strokeStyle = P.black; oc.lineWidth = 2;
+  oc.beginPath();
+  oc.moveTo(t2.r+5, t2.b+14);
+  oc.lineTo(hp2x, hp2y-4); oc.stroke();
+  oc.fillStyle = P.orange;
+  oc.beginPath(); oc.ellipse(hp2x, hp2y+18, 14, 16, 0, 0, Math.PI*2); oc.fill();
+  pumpkinFace(oc, hp2x, hp2y+18, 10);
+
+  // ── TIER 4 BOTTOM — Village ──────────────────────────────────────
+  const t4 = tiers[3], base4 = t4.b - 20;
+
+  // Grass
+  oc.fillStyle = P.greenDark;
+  oc.fillRect(t4.l, base4-16, t4.r-t4.l, 16);
+  oc.fillStyle = P.greenLight;
+  oc.fillRect(t4.l, base4-16, t4.r-t4.l, 6);
+
+  // Pine tree far left
+  const ptx = t4.l+42, pty = base4;
+  [[ptx, pty-48, 30, 24], [ptx, pty-85, 24, 22], [ptx, pty-118, 18, 20]].forEach(([x,y,w,h]) => {
+    oc.fillStyle = P.greenDark;
+    oc.beginPath();
+    oc.moveTo(x,   y);
+    oc.lineTo(x-w, y+h);
+    oc.lineTo(x+w, y+h);
+    oc.closePath(); oc.fill();
+  });
+  oc.fillStyle = P.brown;
+  oc.fillRect(ptx-5, pty-48, 10, 22);
+
+  // Dark house left
+  house(oc, t4.l+115, base4, 58, 82, 98, P.black, '#C06018');
+
+  // Purple house
+  house(oc, t4.l+218, base4, 68, 98, 118, P.purple, '#E08018');
+
+  // Gate centre
+  gate(oc, cx, base4);
+
+  // Spider
+  const spidx = cx+58, spidy = t3.b+28;
+  oc.strokeStyle = '#888888'; oc.lineWidth = 1;
+  oc.beginPath(); oc.moveTo(spidx, t3.b+2); oc.lineTo(spidx, spidy-8); oc.stroke();
+  oc.fillStyle = P.black;
+  oc.beginPath(); oc.ellipse(spidx, spidy, 9, 7, 0, 0, Math.PI*2); oc.fill();
+  oc.strokeStyle = P.black; oc.lineWidth = 1.5;
+  [[-0.9,-0.3],[-0.5,0.4],[0.5,0.4],[0.9,-0.3]].forEach(([ax,ay]) => {
+    oc.beginPath();
+    oc.moveTo(spidx, spidy);
+    oc.lineTo(spidx+ax*18, spidy+ay*10); oc.stroke();
+    oc.beginPath();
+    oc.moveTo(spidx, spidy);
+    oc.lineTo(spidx-ax*18, spidy+ay*10); oc.stroke();
+  });
+
+  // Right haunted house
+  house(oc, cx+185, base4, 68, 88, 112, P.black, '#D07018');
+
+  // Dead tree far right
+  const dtx = t4.r-58, dty = base4;
+  oc.strokeStyle = P.brown; oc.lineWidth = 9; oc.lineCap = 'round';
+  oc.beginPath(); oc.moveTo(dtx, dty); oc.lineTo(dtx, dty-140); oc.stroke();
+  oc.lineWidth = 5;
+  [[dtx, dty-115, dtx+36, dty-140],
+   [dtx, dty-98,  dtx-30, dty-124],
+   [dtx, dty-78,  dtx+26, dty-96],
+   [dtx, dty-118, dtx+14, dty-134]].forEach(([x1,y1,x2,y2]) => {
+    oc.beginPath(); oc.moveTo(x1,y1); oc.lineTo(x2,y2); oc.stroke();
+  });
+  // Lantern
+  oc.fillStyle = '#3A3A3A';
+  oc.fillRect(dtx+30, dty-152, 18, 24);
+  oc.fillStyle = P.gold;
+  oc.fillRect(dtx+32, dty-150, 14, 20);
+
+  // Small pumpkin near gate
+  oc.fillStyle = P.orange;
+  oc.beginPath(); oc.ellipse(cx-60, base4-22, 20, 24, 0, 0, Math.PI*2); oc.fill();
+  pumpkinFace(oc, cx-60, base4-22, 16);
+
+  // ── HAPPY HALLOWEEN TEXT ─────────────────────────────────────────
+  oc.fillStyle = P.purpleDark;
+  oc.font = 'italic bold 54px Georgia, serif';
+  oc.textAlign = 'center';
+  oc.fillText('Happy Halloween', cx+2, H - 52);
+  oc.fillStyle = P.purple;
+  oc.fillText('Happy Halloween', cx, H - 54);
+}
+
+drawScene();
+
+// ────────────────────────────────────────────────────────────────────
+// CROSS-STITCH RENDER
+// ────────────────────────────────────────────────────────────────────
+
+// 1. Draw Aida fabric background
+ctx.fillStyle = '#EEEBE0';
+ctx.fillRect(0, 0, W, H);
+
+// Aida hole grid (tiny dots every S pixels)
+ctx.fillStyle = 'rgba(170,160,140,0.45)';
+for (let y = 0; y <= H; y += S) {
+  for (let x = 0; x <= W; x += S) {
+    ctx.beginPath();
+    ctx.arc(x, y, 0.9, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// Subtle warp/weft lines (very faint)
+ctx.strokeStyle = 'rgba(200,192,175,0.22)';
+ctx.lineWidth = 0.5;
+for (let y = 0; y <= H; y += S) {
+  ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+}
+for (let x = 0; x <= W; x += S) {
+  ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+}
+
+// 2. Sample offscreen and render X stitches
+const imgData = oc.getImageData(0, 0, W, H).data;
+
+ctx.lineCap = 'round';
+
+for (let row = 0; row < Math.floor(H / S); row++) {
+  for (let col = 0; col < Math.floor(W / S); col++) {
+    // Sample centre of cell
+    const px = Math.min(col * S + Math.floor(S / 2), W - 1);
+    const py = Math.min(row * S + Math.floor(S / 2), H - 1);
+    const i = (py * W + px) * 4;
+    const r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+
+    if (isBg(r, g, b)) continue; // leave as bare Aida
+
+    // Light wash fill
+    ctx.fillStyle = `rgba(${r},${g},${b},0.2)`;
+    ctx.fillRect(col * S, row * S, S, S);
+
+    // Draw X stitch — slight darkening for thread look
+    const dr = Math.round(r * 0.82);
+    const dg = Math.round(g * 0.82);
+    const db = Math.round(b * 0.82);
+    ctx.strokeStyle = `rgb(${dr},${dg},${db})`;
+    ctx.lineWidth = 1.6;
+
+    const x0 = col * S + 1.5, y0 = row * S + 1.5;
+    const x1 = col * S + S - 1.5, y1 = row * S + S - 1.5;
+
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, y0); ctx.lineTo(x0, y1); ctx.stroke();
+  }
+}
+
+// 3. Edge vignette (makes it look like real fabric)
+const vg = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.38, W/2, H/2, Math.min(W,H)*0.74);
+vg.addColorStop(0, 'rgba(0,0,0,0)');
+vg.addColorStop(1, 'rgba(40,32,20,0.18)');
+ctx.fillStyle = vg;
+ctx.fillRect(0, 0, W, H);
+
+</script>
+</body>
+</html>
